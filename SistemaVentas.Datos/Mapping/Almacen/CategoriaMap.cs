@@ -11,7 +11,7 @@ namespace SistemaVentas.Datos.Mapping.Almacen
     {
         public void Configure(EntityTypeBuilder<Categoria> builder)
         {
-            builder.ToTable("categoria").HasKey(c => c.idcategoria);
+            builder.ToTable("categoria").HasKey(c => c.Idcategoria);
         }
     }
 }

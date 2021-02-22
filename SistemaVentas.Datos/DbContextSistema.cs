@@ -9,16 +9,19 @@ namespace SistemaVentas.Datos
 {
     public class DbContextSistema: DbContext
     {
+        public DbSet<Categoria> Categorias { get; set; }
+        public DbSet<Articulo> Articulos { get; set; }
+
         public DbContextSistema(DbContextOptions<DbContextSistema> options) : base(options)
         {
 
         }
 
-        public DbSet<Categoria> Categorias { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new CategoriaMap());
+            modelBuilder.ApplyConfiguration(new ArticuloMap());
         }
     }
 }

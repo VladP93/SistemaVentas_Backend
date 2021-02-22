@@ -7,47 +7,38 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaVentas.Datos;
 using SistemaVentas.Entidades.Almacen;
-using SistemaVentas.Web.Models.Almacen.Categoria;
+using SistemaVentas.Web.Models.Almacen.Articulo;
 
 namespace Sistema.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoriasController : ControllerBase
+    public class ArticulosController : ControllerBase
     {
         private readonly DbContextSistema _context;
 
-        public CategoriasController(DbContextSistema context)
+        public ArticulosController(DbContextSistema context)
         {
             _context = context;
         }
 
-        // GET: api/Categorias/Listar
+        // GET: api/Articulos/Listar
         [HttpGet("[action]")]
-        public async Task<IEnumerable<CategoriaViewModel>> Listar()
+        public async Task<IEnumerable<ArticuloViewModel>> Listar()
         {
-            var categoria = await _context.Categorias.ToListAsync();
+            var articulo = await _context.Articulos.Include(a => a.Categoria).ToListAsync();
 
-            return categoria.Select(c => new CategoriaViewModel
+            return articulo.Select(a => new ArticuloViewModel
             {
-                Idcategoria = c.Idcategoria,
-                Nombre = c.Nombre,
-                Descripcion = c.Descripcion,
-                Condicion = c.Condicion
-            });
-
-        }
-
-        // GET: api/Categorias/Select
-        [HttpGet("[action]")]
-        public async Task<IEnumerable<SelectViewModel>> Select()
-        {
-            var categoria = await _context.Categorias.Where(c => c.Condicion == true).ToListAsync();
-
-            return categoria.Select(c => new SelectViewModel
-            {
-                Idcategoria = c.Idcategoria,
-                Nombre = c.Nombre
+                Idarticulo = a.Idarticulo,
+                Idcategoria = a.Idcategoria,
+                Categoria = a.Categoria.Nombre,
+                Codigo = a.Codigo,
+                Nombre = a.Nombre,
+                Stock = a.Stock,
+                Precio_venta = a.Precio_venta,
+                Descripcion = a.Descripcion,
+                Condicion = a.Condicion
             });
 
         }
@@ -57,23 +48,28 @@ namespace Sistema.Web.Controllers
         public async Task<IActionResult> Mostrar([FromRoute] int id)
         {
 
-            var categoria = await _context.Categorias.FindAsync(id);
+            var articulo = await _context.Articulos.Include(a => a.Categoria).SingleOrDefaultAsync(a => a.Idarticulo == id);
 
-            if (categoria == null)
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            return Ok(new CategoriaViewModel
+            return Ok(new ArticuloViewModel
             {
-                Idcategoria = categoria.Idcategoria,
-                Nombre = categoria.Nombre,
-                Descripcion = categoria.Descripcion,
-                Condicion = categoria.Condicion
+                Idarticulo = articulo.Idarticulo,
+                Idcategoria = articulo.Idcategoria,
+                Categoria = articulo.Categoria.Nombre,
+                Codigo = articulo.Codigo,
+                Nombre = articulo.Nombre,
+                Stock = articulo.Stock,
+                Precio_venta = articulo.Precio_venta,
+                Descripcion = articulo.Descripcion,
+                Condicion = articulo.Condicion
             });
         }
 
-        // PUT: api/Categorias/Actualizar
+        // PUT: api/Articulos/Actualizar
         [HttpPut("[action]")]
         public async Task<IActionResult> Actualizar([FromBody] ActualizarViewModel model)
         {
@@ -82,20 +78,24 @@ namespace Sistema.Web.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (model.idcategoria <= 0)
+            if (model.Idarticulo <= 0)
             {
                 return BadRequest();
             }
 
-            var categoria = await _context.Categorias.FirstOrDefaultAsync(c => c.Idcategoria == model.idcategoria);
+            var articulo = await _context.Articulos.FirstOrDefaultAsync(a => a.Idarticulo == model.Idarticulo);
 
-            if (categoria == null)
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            categoria.Nombre = model.nombre;
-            categoria.Descripcion = model.descripcion;
+            articulo.Idcategoria = model.Idcategoria;
+            articulo.Codigo = model.Codigo;
+            articulo.Nombre = model.Nombre;
+            articulo.Precio_venta = model.Precio_venta;
+            articulo.Stock = model.Stock;
+            articulo.Descripcion = model.Descripcion;
 
             try
             {
@@ -116,58 +116,35 @@ namespace Sistema.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("algo salió mal en el modelstate");
                 return BadRequest(ModelState);
             }
 
-            Categoria categoria = new Categoria
+            Articulo articulo = new Articulo
             {
+                Idcategoria = model.Idcategoria,
+                Codigo = model.Codigo,
                 Nombre = model.Nombre,
+                Precio_venta = model.Precio_venta,
+                Stock = model.Stock,
                 Descripcion = model.Descripcion,
                 Condicion = true
             };
 
-            _context.Categorias.Add(categoria);
+            _context.Articulos.Add(articulo);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
 
             return Ok();
         }
 
-        // DELETE: api/Categorias/Eliminar/1
-        [HttpDelete("[action]/{id}")]
-        public async Task<IActionResult> Eliminar([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var categoria = await _context.Categorias.FindAsync(id);
-            if (categoria == null)
-            {
-                return NotFound();
-            }
-
-            _context.Categorias.Remove(categoria);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
-
-            return Ok(categoria);
-        }
-
-        // PUT: api/Categorias/Desactivar/1
+        // PUT: api/Articulos/Desactivar/1
         [HttpPut("[action]/{id}")]
         public async Task<IActionResult> Desactivar([FromRoute] int id)
         {
@@ -177,14 +154,14 @@ namespace Sistema.Web.Controllers
                 return BadRequest();
             }
 
-            var categoria = await _context.Categorias.FirstOrDefaultAsync(c => c.Idcategoria == id);
+            var articulo = await _context.Articulos.FirstOrDefaultAsync(a => a.Idarticulo == id);
 
-            if (categoria == null)
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            categoria.Condicion = false;
+            articulo.Condicion = false;
 
             try
             {
@@ -199,7 +176,7 @@ namespace Sistema.Web.Controllers
             return Ok();
         }
 
-        // PUT: api/Categorias/Activar/1
+        // PUT: api/Articulos/Activar/1
         [HttpPut("[action]/{id}")]
         public async Task<IActionResult> Activar([FromRoute] int id)
         {
@@ -209,14 +186,14 @@ namespace Sistema.Web.Controllers
                 return BadRequest();
             }
 
-            var categoria = await _context.Categorias.FirstOrDefaultAsync(c => c.Idcategoria == id);
+            var articulo = await _context.Articulos.FirstOrDefaultAsync(a => a.Idarticulo == id);
 
-            if (categoria == null)
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            categoria.Condicion = true;
+            articulo.Condicion = true;
 
             try
             {
@@ -231,9 +208,9 @@ namespace Sistema.Web.Controllers
             return Ok();
         }
 
-        private bool CategoriaExists(int id)
+        private bool ArticuloExists(int id)
         {
-            return _context.Categorias.Any(e => e.Idcategoria == id);
+            return _context.Articulos.Any(e => e.Idarticulo == id);
         }
     }
 }

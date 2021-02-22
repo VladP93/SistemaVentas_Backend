@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Almacen\Articulo.cs~RF30da7717.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Usuario\" />
     <Folder Include="Ventas\" />
   </ItemGroup>
