@@ -116,7 +116,6 @@ namespace Sistema.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("algo salió mal en el modelstate");
                 return BadRequest(ModelState);
             }
 
