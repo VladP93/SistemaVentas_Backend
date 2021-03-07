@@ -8,8 +8,4 @@
     <None Remove="Almacen\Articulo.cs~RF30da7717.TMP" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Ventas\" />
-  </ItemGroup>
-
 </Project>

@@ -89,7 +89,7 @@ namespace SistemaVentas.Web.Controllers
             return Ok();
         }
 
-        // PUT: api/Articulos/Actualizar
+        // PUT: api/Usuarios/Actualizar
         [HttpPut("[action]")]
         public async Task<IActionResult> Actualizar([FromBody] ActualizarViewModel model)
         {
