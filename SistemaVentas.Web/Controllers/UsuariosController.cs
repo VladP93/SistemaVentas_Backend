@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using SistemaVentas.Datos;
 using SistemaVentas.Entidades.Usuario;
 using SistemaVentas.Web.Models.Usuarios.Usuario;
@@ -16,13 +22,16 @@ namespace SistemaVentas.Web.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly DbContextSistema _context;
+        private readonly IConfiguration _config;
 
-        public UsuariosController(DbContextSistema context)
+        public UsuariosController(DbContextSistema context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // GET: api/Usuarios/Listar
+        [Authorize(Roles = "Administrador")]
         [HttpGet("[action]")]
         public async Task<IEnumerable<UsuarioViewModel>> Listar()
         {
@@ -45,6 +54,7 @@ namespace SistemaVentas.Web.Controllers
         }
 
         // POST: api/Usuarios/Crear
+        [Authorize(Roles = "Administrador")]
         [HttpPost("[action]")]
         public async Task<IActionResult> Crear([FromBody] CrearViewModel model)
         {
@@ -55,7 +65,7 @@ namespace SistemaVentas.Web.Controllers
 
             var email = model.Email.ToLower();
 
-            if(await _context.Usuarios.AnyAsync(u=>u.Email == email))
+            if (await _context.Usuarios.AnyAsync(u => u.Email == email))
             {
                 return BadRequest("El Email ya existe");
             }
@@ -90,6 +100,7 @@ namespace SistemaVentas.Web.Controllers
         }
 
         // PUT: api/Usuarios/Actualizar
+        [Authorize(Roles = "Administrador")]
         [HttpPut("[action]")]
         public async Task<IActionResult> Actualizar([FromBody] ActualizarViewModel model)
         {
@@ -143,11 +154,12 @@ namespace SistemaVentas.Web.Controllers
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
                 passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
         }
 
         // PUT: api/Usuarios/Desactivar/1
+        [Authorize(Roles = "Administrador")]
         [HttpPut("[action]/{id}")]
         public async Task<IActionResult> Desactivar([FromRoute] int id)
         {
@@ -180,6 +192,7 @@ namespace SistemaVentas.Web.Controllers
         }
 
         // PUT: api/Usuarios/Activar/1
+        [Authorize(Roles = "Administrador")]
         [HttpPut("[action]/{id}")]
         public async Task<IActionResult> Activar([FromRoute] int id)
         {
@@ -210,6 +223,64 @@ namespace SistemaVentas.Web.Controllers
 
             return Ok();
         }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            var Email = model.Email.ToLower();
+
+            var usuario = await _context.Usuarios.Where(u => u.Condicion == true).Include(u => u.Rol).FirstOrDefaultAsync(u => u.Email == Email);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            if (!VerificarPasswordHash(model.Password, usuario.Password_hash, usuario.Password_salt))
+            {
+                return NotFound();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.Idusuario.ToString()),
+                new Claim(ClaimTypes.Email, Email),
+                new Claim(ClaimTypes.Role, usuario.Rol.Nombre),
+                new Claim("idusuario", usuario.Idusuario.ToString()),
+                new Claim("rol", usuario.Rol.Nombre),
+                new Claim("nombre", usuario.Nombre),
+            };
+
+            return Ok(new { token = GenerarToken(claims) });
+
+        }
+
+        private string GenerarToken(List<Claim> claims)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                _config["Jwt:Issuer"],
+                _config["Jwt:Issuer"],
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds,
+                claims: claims
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+
+        }
+
+        private bool VerificarPasswordHash(string password, byte[] passwordHashAlmacenado, byte[] passwordSalt)
+        {
+            using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
+            {
+                var passwordHashNuevo = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return new ReadOnlySpan<byte>(passwordHashAlmacenado).SequenceEqual(new ReadOnlySpan<byte>(passwordHashNuevo));
+            }
+        }
+
 
         private bool UsuarioExists(int id)
         {
