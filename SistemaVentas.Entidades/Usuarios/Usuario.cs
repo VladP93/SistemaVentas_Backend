@@ -1,10 +1,11 @@
-﻿using System;
+﻿using SistemaVentas.Entidades.Almacen;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace SistemaVentas.Entidades.Usuario
+namespace SistemaVentas.Entidades.Usuarios
 {
     public class Usuario
     {
@@ -27,5 +28,6 @@ namespace SistemaVentas.Entidades.Usuario
         public bool Condicion { get; set; }
         [ForeignKey("Idrol")]
         public Rol Rol { get; set; }
+        public ICollection<Ingreso> Ingresos { get; set; }
     }
 }

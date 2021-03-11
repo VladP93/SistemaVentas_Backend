@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SistemaVentas.Entidades.Almacen
@@ -22,5 +23,6 @@ namespace SistemaVentas.Entidades.Almacen
 
         [ForeignKey("Idcategoria")]
         public Categoria Categoria { get; set; }
+        public ICollection<DetalleIngreso> DetallesIngresos{ get; set; }
     }
 }

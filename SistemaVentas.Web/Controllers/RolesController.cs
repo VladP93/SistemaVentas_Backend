@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaVentas.Datos;
-using SistemaVentas.Entidades.Usuario;
+using SistemaVentas.Entidades.Usuarios;
 using SistemaVentas.Web.Models.Usuarios.Rol;
 
 namespace SistemaVentas.Web.Controllers

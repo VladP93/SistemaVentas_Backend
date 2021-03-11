@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SistemaVentas.Entidades.Usuario;
+using SistemaVentas.Entidades.Usuarios;
 using System;
 using System.Collections.Generic;
 using System.Text;

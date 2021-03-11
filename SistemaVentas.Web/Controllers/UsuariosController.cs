@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SistemaVentas.Datos;
-using SistemaVentas.Entidades.Usuario;
+using SistemaVentas.Entidades.Usuarios;
 using SistemaVentas.Web.Models.Usuarios.Usuario;
 
 namespace SistemaVentas.Web.Controllers
