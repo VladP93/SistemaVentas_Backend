@@ -1,4 +1,5 @@
 ﻿using SistemaVentas.Entidades.Almacen;
+using SistemaVentas.Entidades.Ventas;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,5 +30,6 @@ namespace SistemaVentas.Entidades.Usuarios
         [ForeignKey("Idrol")]
         public Rol Rol { get; set; }
         public ICollection<Ingreso> Ingresos { get; set; }
+        public ICollection<Venta> Ventas{ get; set; }
     }
 }

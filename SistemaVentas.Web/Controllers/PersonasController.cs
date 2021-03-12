@@ -76,6 +76,21 @@ namespace SistemaVentas.Web.Controllers
             });
 
         }
+        // GET: api/Personas/SelectClientes
+        [Authorize(Roles = "Vendedor,Administrador")]
+        [HttpGet("[action]")]
+        public async Task<IEnumerable<SelectViewModel>> SelectClientes()
+        {
+            var persona = await _context.Personas.Where(p => p.Tipo_persona == "Cliente").ToListAsync();
+
+            return persona.Select(p => new SelectViewModel
+            {
+                Idpersona = p.Idpersona,
+                Nombre = p.Nombre
+            });
+
+        }
+        
 
         // POST: api/Persona/Crear
         [Authorize(Roles = "Vendedor,Bodeguero,Administrador")]

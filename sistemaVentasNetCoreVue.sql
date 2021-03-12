@@ -117,11 +117,20 @@ create table detalle_venta(
 	FOREIGN KEY (idarticulo) REFERENCES articulo (idarticulo)
 );
 
--- Trigger
+-- Trigger aumentar articulo con ingreso
 CREATE TRIGGER ActualizarStock_Ingreso
    ON detalle_ingreso
    FOR INSERT
    AS
    UPDATE a SET a.stock=a.stock+d.cantidad
+   FROM articulo AS a INNER JOIN
+   INSERTED AS d ON d.idarticulo=a.idarticulo
+
+-- Trigger disminuir articulo con venta
+CREATE TRIGGER ActualizarStock_Venta
+   ON detalle_venta
+   FOR INSERT
+   AS
+   UPDATE a SET a.stock=a.stock-d.cantidad
    FROM articulo AS a INNER JOIN
    INSERTED AS d ON d.idarticulo=a.idarticulo

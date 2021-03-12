@@ -67,6 +67,28 @@ namespace Sistema.Web.Controllers
 
         }
 
+        // GET: api/Articulos/ListarVenta/texto
+        [Authorize(Roles = "Vendedor,Administrador")]
+        [HttpGet("[action]/{texto}")]
+        public async Task<IEnumerable<ArticuloViewModel>> ListarVenta([FromRoute] string texto)
+        {
+            var articulo = await _context.Articulos.Include(a => a.Categoria).Where(a => a.Nombre.Contains(texto)).Where(a => a.Condicion).Where(a=>a.Stock>0).ToListAsync();
+
+            return articulo.Select(a => new ArticuloViewModel
+            {
+                Idarticulo = a.Idarticulo,
+                Idcategoria = a.Idcategoria,
+                Categoria = a.Categoria.Nombre,
+                Codigo = a.Codigo,
+                Nombre = a.Nombre,
+                Stock = a.Stock,
+                Precio_venta = a.Precio_venta,
+                Descripcion = a.Descripcion,
+                Condicion = a.Condicion
+            });
+
+        }
+
         // GET: api/Categorias/Mostrar/1
         [Authorize(Roles = "Bodeguero,Administrador")]
         [HttpGet("[action]/{id}")]
@@ -101,6 +123,33 @@ namespace Sistema.Web.Controllers
         {
 
             var articulo = await _context.Articulos.Include(a => a.Categoria).Where(a=>a.Condicion==true).SingleOrDefaultAsync(a => a.Codigo == codigo);
+
+            if (articulo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new ArticuloViewModel
+            {
+                Idarticulo = articulo.Idarticulo,
+                Idcategoria = articulo.Idcategoria,
+                Categoria = articulo.Categoria.Nombre,
+                Codigo = articulo.Codigo,
+                Nombre = articulo.Nombre,
+                Stock = articulo.Stock,
+                Precio_venta = articulo.Precio_venta,
+                Descripcion = articulo.Descripcion,
+                Condicion = articulo.Condicion
+            });
+        }
+
+        // GET: api/Categorias/BuscarCodigoVenta/31234C
+        [Authorize(Roles = "Vendedor,Administrador")]
+        [HttpGet("[action]/{codigo}")]
+        public async Task<IActionResult> BuscarCodigoVenta([FromRoute] string codigo)
+        {
+
+            var articulo = await _context.Articulos.Include(a => a.Categoria).Where(a => a.Condicion == true).Where(a=>a.Stock>0).SingleOrDefaultAsync(a => a.Codigo == codigo);
 
             if (articulo == null)
             {
