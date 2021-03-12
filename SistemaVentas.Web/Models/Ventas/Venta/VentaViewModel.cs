@@ -10,6 +10,10 @@ namespace SistemaVentas.Web.Models.Ventas.Venta
         public int Idventa { get; set; }
         public int Idcliente { get; set; }
         public string Cliente { get; set; }
+        public string Num_documento { get; set; }
+        public string Direccion { get; set; }
+        public string Telefono { get; set; }
+        public string Email { get; set; }
         public int Idusuario { get; set; }
         public string Usuario { get; set; }
         public string Tipo_comprobante { get; set; }
