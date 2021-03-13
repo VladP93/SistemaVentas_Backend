@@ -103,6 +103,38 @@ namespace SistemaVentas.Web.Controllers
 
         }
 
+        // GET: api/Ingresos/ConsultaFechas/{incio}/{fin}
+        [Authorize(Roles = "Administrador")]
+        [HttpGet("[action]/{FechaInicio}/{FechaFin}")]
+        public async Task<IEnumerable<IngresoViewModel>> ConsultaFechas([FromRoute] DateTime FechaInicio, DateTime FechaFin)
+        {
+            var ingreso = await _context.Ingresos
+                .Include(i => i.Usuario)
+                .Include(i => i.Persona)
+                .Where(i => i.Fecha_hora >= FechaInicio)
+                .Where(i => i.Fecha_hora <= FechaFin)
+                .OrderByDescending(i => i.Idingreso)
+                .Take(100)
+                .ToListAsync();
+
+            return ingreso.Select(i => new IngresoViewModel
+            {
+                Idingreso = i.Idingreso,
+                Idproveedor = i.Idproveedor,
+                Proveedor = i.Persona.Nombre,
+                Idusuario = i.Idusuario,
+                Usuario = i.Usuario.Nombre,
+                Tipo_comprobante = i.Tipo_comprobante,
+                Num_comprobante = i.Num_comprobante,
+                Serie_comprobante = i.Serie_comprobante,
+                Fecha_hora = i.Fecha_hora,
+                Impuesto = i.Impuesto,
+                Total = i.Total,
+                Estado = i.Estado
+            });
+
+        }
+
         // POST: api/Ingresos/Crear
         [Authorize(Roles = "Bodeguero,Administrador")]
         [HttpPost("[action]")]

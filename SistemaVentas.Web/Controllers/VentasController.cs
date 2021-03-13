@@ -112,6 +112,42 @@ namespace SistemaVentas.Web.Controllers
 
         }
 
+        // GET: api/Ventas/ConsultaFechas/{incio}/{fin}
+        [Authorize(Roles = "Administrador")]
+        [HttpGet("[action]/{FechaInicio}/{FechaFin}")]
+        public async Task<IEnumerable<VentaViewModel>> ConsultaFechas([FromRoute] DateTime FechaInicio, DateTime FechaFin)
+        {
+            var venta = await _context.Ventas
+                .Include(v => v.Usuario)
+                .Include(v => v.Persona)
+                .Where(i=>i.Fecha_hora>=FechaInicio)
+                .Where(i=>i.Fecha_hora<=FechaFin)
+                .OrderByDescending(v => v.Idventa)
+                .Take(100)
+                .ToListAsync();
+
+            return venta.Select(v => new VentaViewModel
+            {
+                Idventa = v.Idventa,
+                Idcliente = v.Idcliente,
+                Cliente = v.Persona.Nombre,
+                Num_documento = v.Persona.Num_documento,
+                Direccion = v.Persona.Direccion,
+                Telefono = v.Persona.Telefono,
+                Email = v.Persona.Email,
+                Idusuario = v.Idusuario,
+                Usuario = v.Usuario.Nombre,
+                Tipo_comprobante = v.Tipo_comprobante,
+                Num_comprobante = v.Num_comprobante,
+                Serie_comprobante = v.Serie_comprobante,
+                Fecha_hora = v.Fecha_hora,
+                Impuesto = v.Impuesto,
+                Total = v.Total,
+                Estado = v.Estado
+            });
+
+        }
+
         // POST: api/Ventas/Crear
         //[Authorize(Roles = "Vendedor,Administrador")]
         [HttpPost("[action]")]
