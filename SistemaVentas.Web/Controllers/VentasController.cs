@@ -147,6 +147,25 @@ namespace SistemaVentas.Web.Controllers
             });
 
         }
+        // GET: api/Ventas/VentasAnual
+        [Authorize(Roles = "Bodeguero,Vendedor,Administrador")]
+        [HttpGet("[action]")]
+        public async Task<IEnumerable<ConsultaViewModel>> VentasAnual()
+        {
+            var consulta = await _context.Ventas
+                .GroupBy(v=>v.Fecha_hora.Month)
+                .Select(x=> new { Etiqueta=x.Key, Valor=x.Sum(v=>v.Total) })
+                .OrderByDescending(x =>x.Etiqueta)
+                .Take(12)
+                .ToListAsync();
+
+            return consulta.Select(c => new ConsultaViewModel
+            {
+                Etiqueta = c.Etiqueta.ToString(),
+                Valor = c.Valor
+            });
+
+        }
 
         // POST: api/Ventas/Crear
         //[Authorize(Roles = "Vendedor,Administrador")]
